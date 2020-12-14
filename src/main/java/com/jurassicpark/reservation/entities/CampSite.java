@@ -1,10 +1,7 @@
 package com.jurassicpark.reservation.entities;
 
 import com.jurassicpark.reservation.util.BookingConstants.CampSiteStatus;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -12,8 +9,8 @@ import javax.persistence.*;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name = "camp_site")
+@Builder
+@Entity(name = "camp_site")
 public class CampSite {
 
     @Id
