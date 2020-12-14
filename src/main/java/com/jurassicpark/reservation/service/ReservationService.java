@@ -17,6 +17,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -50,7 +53,7 @@ public class ReservationService {
             throw new NotFoundException("invalid booking id");
         }
     }
-
+    @Transactional(isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
     public Long createReservation(ReservationModel reservationModel) throws NotAvailableException {
 
         DateTime startD = DateTime.parse(reservationModel.getStartDate()).withTimeAtStartOfDay();
