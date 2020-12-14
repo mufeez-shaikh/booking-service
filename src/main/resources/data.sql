@@ -14,7 +14,7 @@ insert into camp_site (site_name, status) values ('camp_site1','ACTIVE'),
 -- reservation
 
 insert into reservation (camp_site_id, start_date, end_date, booked_by, email, status) values
-(1, '2020-09-01','2020-09-03', 'cust1', 'cust1@company.com','CONFIRMED'),
+(1, '2020-12-01','2020-09-03', 'cust1', 'cust1@company.com','CONFIRMED'),
 (1, '2020-09-05','2020-09-07','cust2', 'cust2@company.com','CONFIRMED'),
 (1, '2020-09-11','2020-09-13','cust3', 'cust3@company.com','CONFIRMED'),
 (1, '2020-09-20','2020-09-22','cust4', 'cust4@company.com','CONFIRMED'),

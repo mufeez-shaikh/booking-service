@@ -1,10 +1,7 @@
 package com.jurassicpark.reservation.entities;
 
 import com.jurassicpark.reservation.util.BookingConstants.ReseervationStatus;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -13,8 +10,8 @@ import java.util.Date;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Entity
-@Table(name = "reservation")
 public class Reservation {
 
     @Id
@@ -31,4 +28,8 @@ public class Reservation {
 
     @Enumerated(EnumType.STRING)
     private ReseervationStatus status;
+
+    private String bookedBy;
+
+    private String email;
 }
