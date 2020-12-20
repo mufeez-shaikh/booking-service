@@ -38,7 +38,7 @@ public class ReservationController {
             startDate = Optional.of(DateTime.now().withTimeAtStartOfDay().toDate());
             endDate = Optional.of(DateTime.now().withTimeAtStartOfDay().plusDays(30).toDate());
         }
-        List<String> errors = validationService.validateReservationDates(startDate, endDate);
+        List<String> errors = validationService.validateGetAvailableDates(startDate, endDate);
         if( ! errors.isEmpty()){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
@@ -53,18 +53,22 @@ public class ReservationController {
     @PostMapping
     public ResponseEntity createReservation(@RequestBody ReservationModel reservationModel){
         try {
+            List<String> errors = validationService.validateCreateReservationModel(reservationModel);
+            if( ! errors.isEmpty()){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+            }
             Long reservationId = reservationService.createReservation(reservationModel);
 
             return ResponseEntity.ok(reservationId);
         } catch (NotAvailableException e) {
-            logger.info(e.getMessage(),e);
+            logger.error("reservation not available, returning error response");
 
             return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 
     @PutMapping("/cancel/{reservationId}")
-    public ResponseEntity updateReservation(@PathVariable Long reservationId){
+    public ResponseEntity cancelReservation(@PathVariable Long reservationId){
         try {
             return ResponseEntity.ok(reservationService.cancelReservation(reservationId));
         } catch (NotFoundException e) {

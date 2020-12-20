@@ -53,16 +53,20 @@ public class ReservationService {
             throw new NotFoundException("invalid booking id");
         }
     }
-    @Transactional(isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public Long createReservation(ReservationModel reservationModel) throws NotAvailableException {
 
         DateTime startD = DateTime.parse(reservationModel.getStartDate()).withTimeAtStartOfDay();
         DateTime endD = DateTime.parse(reservationModel.getEndDate()).withTimeAtStartOfDay();
 
-        List<Reservation> reservationsForCampSite = reservationRepository.findReservationsForCampSite(
-                startD.toDate(), endD.toDate(), reservationModel.getCampSiteId()
-        );
-
+        List<Reservation> reservationsForCampSite = reservationRepository
+                .findReservationsForCampSite(startD.toDate(), endD.toDate(), reservationModel.getCampSiteId());
+        try {
+            Thread.sleep(5000);
+            logger.info("wake");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         if (reservationsForCampSite.isEmpty()) {
             Reservation savedReservation = reservationRepository.save(toEntity(reservationModel));
             logger.info("reservation created. Id=" + savedReservation.getId());
