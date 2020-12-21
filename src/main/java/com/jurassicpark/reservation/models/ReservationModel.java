@@ -10,6 +10,8 @@ import lombok.*;
 @Builder
 public class ReservationModel {
 
+    private Long reservationId;
+
     private long campSiteId;
 
     private String startDate;

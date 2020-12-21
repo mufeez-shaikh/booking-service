@@ -53,6 +53,34 @@ public class ReservationService {
             throw new NotFoundException("invalid booking id");
         }
     }
+
+    @Transactional
+    public void updateReservation(ReservationModel reservationModel) throws NotFoundException, NotAvailableException {
+        Optional<Reservation> reservation = reservationRepository.findByIdAndStatus(reservationModel.getReservationId(), BookingConstants.ReseervationStatus.CONFIRMED);
+        if (! reservation.isPresent()) {
+            throw new NotFoundException("invalid booking id");
+        }
+        DateTime startD = DateTime.parse(reservationModel.getStartDate()).withTimeAtStartOfDay();
+        DateTime endD = DateTime.parse(reservationModel.getEndDate()).withTimeAtStartOfDay();
+
+        List<Reservation> reservationsForCampSite = reservationRepository
+                .findReservationsForCampSite(startD.toDate(), endD.toDate(), reservationModel.getCampSiteId());
+        if (reservationsForCampSite.isEmpty() ||
+                ( reservationsForCampSite.size() ==1 &&
+                        reservationsForCampSite.get(0).getId().equals(reservationModel.getReservationId()))) {
+            Reservation reservationToUpdate = toEntity(reservationModel);
+            reservationToUpdate.setId(reservationModel.getReservationId());
+            reservationRepository.save(reservationToUpdate);
+            logger.info("reservation id: "+reservationModel.getReservationId()+" is updated");
+            return;
+        }
+
+        String msg = "Reservation not available between " + getDateString(startD) + " and " + getDateString(endD);
+        logger.error(msg);
+        throw new NotAvailableException(msg);
+
+    }
+
     @Transactional
     public Long createReservation(ReservationModel reservationModel) throws NotAvailableException {
 
@@ -61,12 +89,7 @@ public class ReservationService {
 
         List<Reservation> reservationsForCampSite = reservationRepository
                 .findReservationsForCampSite(startD.toDate(), endD.toDate(), reservationModel.getCampSiteId());
-        try {
-            Thread.sleep(5000);
-            logger.info("wake");
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+
         if (reservationsForCampSite.isEmpty()) {
             Reservation savedReservation = reservationRepository.save(toEntity(reservationModel));
             logger.info("reservation created. Id=" + savedReservation.getId());

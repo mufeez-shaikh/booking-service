@@ -24,6 +24,8 @@ import java.util.Optional;
 public class ReservationController {
 
     private static final Logger logger = LoggerFactory.getLogger(ReservationController.class);
+
+    private static final String MSG_SUCCESSFUL_UPDATE = "Reservation successfully updated";
     @Autowired
     ReservationService reservationService;
 
@@ -32,29 +34,29 @@ public class ReservationController {
 
     @GetMapping("/availability")
     public ResponseEntity getAvailableSites(
-            @RequestParam @DateTimeFormat(pattern="yyyy-MM-dd") Optional<Date> startDate,
-            @RequestParam @DateTimeFormat(pattern="yyyy-MM-dd") Optional<Date> endDate){
-        if(! startDate.isPresent() && ! endDate.isPresent()){
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Optional<Date> startDate,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Optional<Date> endDate) {
+        if (!startDate.isPresent() && !endDate.isPresent()) {
             startDate = Optional.of(DateTime.now().withTimeAtStartOfDay().toDate());
             endDate = Optional.of(DateTime.now().withTimeAtStartOfDay().plusDays(30).toDate());
         }
         List<String> errors = validationService.validateGetAvailableDates(startDate, endDate);
-        if( ! errors.isEmpty()){
+        if (!errors.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
         return ResponseEntity.ok(reservationService.getCampsiteAvailability(startDate.get(), endDate.get()));
     }
 
     @GetMapping
-    public ResponseEntity<List<Reservation>> getReservations(){
+    public ResponseEntity<List<Reservation>> getReservations() {
         return ResponseEntity.ok(reservationService.getAllReservations());
     }
 
     @PostMapping
-    public ResponseEntity createReservation(@RequestBody ReservationModel reservationModel){
+    public ResponseEntity createReservation(@RequestBody ReservationModel reservationModel) {
         try {
             List<String> errors = validationService.validateCreateReservationModel(reservationModel);
-            if( ! errors.isEmpty()){
+            if (!errors.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
             }
             Long reservationId = reservationService.createReservation(reservationModel);
@@ -63,17 +65,34 @@ public class ReservationController {
         } catch (NotAvailableException e) {
             logger.error("reservation not available, returning error response");
 
-            return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 
     @PutMapping("/cancel/{reservationId}")
-    public ResponseEntity cancelReservation(@PathVariable Long reservationId){
+    public ResponseEntity cancelReservation(@PathVariable Long reservationId) {
         try {
             return ResponseEntity.ok(reservationService.cancelReservation(reservationId));
         } catch (NotFoundException e) {
             logger.error(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @PutMapping
+    public ResponseEntity modifyReservation(@RequestBody ReservationModel reservationModel) {
+        try {
+            reservationService.updateReservation(reservationModel);
+
+            return ResponseEntity.ok(MSG_SUCCESSFUL_UPDATE);
+        } catch (NotFoundException e) {
+            logger.error(e.getMessage());
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (NotAvailableException e) {
+            logger.error("reservation not available, returning error response");
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 }
