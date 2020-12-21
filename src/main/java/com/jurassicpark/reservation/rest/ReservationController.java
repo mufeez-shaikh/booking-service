@@ -61,11 +61,11 @@ public class ReservationController {
             }
             Long reservationId = reservationService.createReservation(reservationModel);
 
-            return ResponseEntity.ok(reservationId);
+            return ResponseEntity.status(HttpStatus.CREATED).body(reservationId);
         } catch (NotAvailableException e) {
             logger.error("reservation not available, returning error response");
 
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
 
@@ -92,7 +92,7 @@ public class ReservationController {
         } catch (NotAvailableException e) {
             logger.error("reservation not available, returning error response");
 
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
 }
